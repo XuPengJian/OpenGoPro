@@ -40,14 +40,24 @@ async def main():
         #     os.makedirs(os.path.dirname(f'download/{item.filename}'), exist_ok=True)
         #     await gopro.http_command.download_file(camera_file=item.filename, local_file=f'download/{item.filename}')
         download_start_time = time.time()
-        for i in range(second_num):
-            file_name = str(new_media.filename).split('/')[0] + '/' + str(new_media.filename).split('/')[-1][:4] + \
-                        str(int(str(new_media.filename).split('/')[-1][4:8]) + i) + '.JPG'
-            os.makedirs(os.path.dirname(f'download/{file_name}'), exist_ok=True)
-            try:
-                await gopro.http_command.download_file(camera_file=file_name, local_file=f'download/{file_name}')
-            except Exception as e:
-                print(e)
+
+        # Gopro的文件命名规则，每999张就会创建新的文件夹
+        max_value = 999
+        full_parts = second_num // max_value
+        remaining_value = second_num % max_value
+
+        # 每一个文件夹的文件数量列表
+        parts = [max_value] * full_parts + [remaining_value]
+
+        for i, item in enumerate(media_list):
+            for j in range(parts[i]):
+                file_name = str(item.filename).split('/')[0] + '/' + str(item.filename).split('/')[-1][:4] + \
+                            str(int(str(item.filename).split('/')[-1][4:8]) + j) + '.JPG'
+                os.makedirs(os.path.dirname(f'download'), exist_ok=True)
+                try:
+                    await gopro.http_command.download_file(camera_file=file_name, local_file=f'download/{file_name.split("/")[-1]}')
+                except Exception as e:
+                    print(e)
         download_end_time = time.time()
         print('---------------------------------------')
         # 执行完毕
