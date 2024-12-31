@@ -53,7 +53,7 @@ async def main():
             for j in range(parts[i]):
                 file_name = str(item.filename).split('/')[0] + '/' + str(item.filename).split('/')[-1][:4] + \
                             str(int(str(item.filename).split('/')[-1][4:8]) + j) + '.JPG'
-                os.makedirs(os.path.dirname(f'download'), exist_ok=True)
+                os.makedirs('download', exist_ok=True)
                 try:
                     await gopro.http_command.download_file(camera_file=file_name, local_file=f'download/{file_name.split("/")[-1]}')
                 except Exception as e:
