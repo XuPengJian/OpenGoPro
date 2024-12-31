@@ -18,7 +18,8 @@ async def main():
     operation = f'gopro-photo --wired'
     subprocess.run(operation, shell=True)
     end_time = time.time()
-    print(f"拍照运行时间：{end_time - start_time}秒")
+    # 预计照片数量
+    second_num = int(end_time - start_time)
     async with WiredGoPro() as gopro:
         # 设置基本属性（这个属性我已经在相机里设置好了）
         # await gopro.ble_setting.resolution.set(Params.Resolution.RES_4K)
@@ -32,15 +33,33 @@ async def main():
         media_list = (await gopro.http_command.get_media_list()).data.files
         print(gopro.http_command.get_media_list())
         print(media_list)
-        new_medioa = media_list[-1]
+        new_media = media_list[-1]
 
         # 遍历所有的文件
-        for item in media_list:
-            os.makedirs(os.path.dirname(f'download/{item.filename}'), exist_ok=True)
-            await gopro.http_command.download_file(camera_file=item.filename, local_file=f'download/{item.filename}')
-
+        # for item in media_list:
+        #     os.makedirs(os.path.dirname(f'download/{item.filename}'), exist_ok=True)
+        #     await gopro.http_command.download_file(camera_file=item.filename, local_file=f'download/{item.filename}')
+        download_start_time = time.time()
+        for i in range(second_num):
+            file_name = str(new_media.filename).split('/')[0] + '/' + str(new_media.filename).split('/')[-1][:4] + \
+                        str(int(str(new_media.filename).split('/')[-1][4:8]) + i) + '.JPG'
+            os.makedirs(os.path.dirname(f'download/{file_name}'), exist_ok=True)
+            try:
+                await gopro.http_command.download_file(camera_file=file_name, local_file=f'download/{file_name}')
+            except Exception as e:
+                print(e)
+        download_end_time = time.time()
+        print('---------------------------------------')
+        # 执行完毕
+        print(f"拍照运行时间:{end_time - start_time}秒")
+        print(f'预计图片数量{second_num}')
+        print('照片下载完成')
+        print(f'照片下载时间:{download_end_time - download_start_time}秒')
         # 格式化sd卡
         await gopro.http_command.delete_all()
+        print('已经格式化sd卡')
+        print('---------------------------------------')
+
 
 # 有线连接代码
 # async def main():
